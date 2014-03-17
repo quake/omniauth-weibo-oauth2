@@ -20,6 +20,7 @@ module OmniAuth
         {
           :nickname     => raw_info['screen_name'],
           :name         => raw_info['name'],
+          :email        => raw_info['email'],
           :location     => raw_info['location'],
           :image        => raw_info['profile_image_url'],
           :description  => raw_info['description'],
@@ -40,7 +41,11 @@ module OmniAuth
         access_token.options[:mode] = :query
         access_token.options[:param_name] = 'access_token'
         @uid ||= access_token.get('/2/account/get_uid.json').parsed["uid"]
-        @raw_info ||= access_token.get("/2/users/show.json", :params => {:uid => @uid}).parsed
+        if @raw_info.nil?
+          @raw_info = access_token.get("/2/users/show.json", :params => {:uid => @uid}).parsed
+          @raw_info['email'] = access_token.get('/2/account/profile/email.json').parsed['email'] rescue nil
+        end
+        @raw_info
       end
 
       ##
@@ -62,7 +67,7 @@ module OmniAuth
           end
         end
       end
-      
+
     end
   end
 end
